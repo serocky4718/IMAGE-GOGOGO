@@ -1,0 +1,14 @@
+node_modules/
+dist/
+dist-electron/
+release/
+
+*.log
+*.err.log
+
+.DS_Store
+Thumbs.db
+
+.env
+.env.*
+!.env.example

@@ -1,0 +1,95 @@
+:root,
+:root[data-theme='cream-pink'] {
+  --bg: #fff7fa;
+  --panel: #ffffff;
+  --panel-2: #ffe7ef;
+  --text: #2d1b23;
+  --muted: #7b6470;
+  --primary: #e94b8a;
+  --primary-hover: #c92f6c;
+  --primary-contrast: #ffffff;
+  --border: #f2c6d5;
+  --success: #2f9d72;
+  --info: #4fa7a3;
+  --warning: #b7791f;
+  --danger: #c8325a;
+  --shadow: 0 18px 60px rgba(112, 48, 76, 0.14);
+  --soft-shadow: 0 8px 24px rgba(112, 48, 76, 0.1);
+  --app-font: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
+}
+
+:root[data-theme='obsidian-gold'] {
+  --bg: #0b0b0d;
+  --panel: #151517;
+  --panel-2: #211d16;
+  --text: #f7f1e5;
+  --muted: #b8ad9c;
+  --primary: #d6a84f;
+  --primary-hover: #f0c76a;
+  --primary-contrast: #17120a;
+  --border: #3a3326;
+  --success: #52c48d;
+  --info: #46b8c8;
+  --warning: #d6a84f;
+  --danger: #f06464;
+  --shadow: 0 18px 60px rgba(0, 0, 0, 0.34);
+  --soft-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
+  --app-font: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
+}
+
+:root[data-theme='cloud-blue'] {
+  --bg: #f6f8fb;
+  --panel: #ffffff;
+  --panel-2: #eef4ff;
+  --text: #172033;
+  --muted: #68758a;
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+  --primary-contrast: #ffffff;
+  --border: #dce3ee;
+  --success: #14a37f;
+  --info: #0ea5e9;
+  --warning: #d97706;
+  --danger: #dc2626;
+  --shadow: 0 18px 60px rgba(31, 54, 92, 0.12);
+  --soft-shadow: 0 8px 24px rgba(31, 54, 92, 0.08);
+  --app-font: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
+}
+
+:root[data-theme='aurora-cyan'] {
+  --bg: #11131a;
+  --panel: #1a1d27;
+  --panel-2: #24283a;
+  --text: #f4f7fb;
+  --muted: #a6b0c3;
+  --primary: #8b5cf6;
+  --primary-hover: #a78bfa;
+  --primary-contrast: #ffffff;
+  --border: #30364a;
+  --success: #34d399;
+  --info: #22d3ee;
+  --warning: #fbbf24;
+  --danger: #fb7185;
+  --shadow: 0 18px 60px rgba(0, 0, 0, 0.32);
+  --soft-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
+  --app-font: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
+}
+
+:root[data-theme='graphite-pink'] {
+  --bg: #f4f2f3;
+  --panel: #ffffff;
+  --panel-2: #eee8eb;
+  --text: #242124;
+  --muted: #6f6870;
+  --primary: #c74c7a;
+  --primary-hover: #a83d66;
+  --primary-contrast: #ffffff;
+  --border: #d8cdd3;
+  --success: #4a8f8c;
+  --info: #3a7ca5;
+  --warning: #a66a00;
+  --danger: #b4233a;
+  --shadow: 0 18px 60px rgba(60, 45, 54, 0.13);
+  --soft-shadow: 0 8px 24px rgba(60, 45, 54, 0.08);
+  --app-font: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
+}
