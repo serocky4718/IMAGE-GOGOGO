@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
-import { ImagePlus, Plus, Settings } from 'lucide-react';
+import { Plus, Settings } from 'lucide-react';
 import ApiSettingsDialog from './ApiSettingsDialog';
 import ChatHistory from './ChatHistory';
 import GenerationCanvas from './GenerationCanvas';
 import ImagePreviewDialog from './ImagePreviewDialog';
 import PreviewGallery from './PreviewGallery';
 import PromptComposer from './PromptComposer';
+import PromptLibraryDialog from './PromptLibraryDialog';
 import ThemeSwitcher from './ThemeSwitcher';
 import { summarizePrompt } from '../lib/options';
 import type {
@@ -13,7 +14,9 @@ import type {
   GenerationParams,
   GenerationRecord,
   GenerationThread,
+  PromptPreset,
   ThemeId,
+  ThreadComposerState,
 } from '../types/app';
 
 interface WorkspaceProps {
@@ -21,6 +24,7 @@ interface WorkspaceProps {
   apiConfigs: ApiConfig[];
   activeThread: GenerationThread;
   threads: GenerationThread[];
+  promptPresets: PromptPreset[];
   themeId: ThemeId;
   imageSaveDirectory?: string;
   persistenceMessage?: string;
@@ -31,6 +35,9 @@ interface WorkspaceProps {
   onAppendThreadRecord: (threadId: string, record: GenerationRecord) => Promise<void>;
   onReplaceThreadRecord: (threadId: string, record: GenerationRecord) => Promise<void>;
   onDeleteThreadRecord: (threadId: string, recordId: string) => Promise<void>;
+  onUpdateThreadComposer: (threadId: string, composer: ThreadComposerState) => Promise<void>;
+  onSavePromptPreset: (title: string, composer: ThreadComposerState, thumbnailSrc?: string) => Promise<void>;
+  onDeletePromptPreset: (presetId: string) => Promise<void>;
   onThemeChange: (themeId: ThemeId) => Promise<void>;
   onUpdateImageSaveDirectory: (imageSaveDirectory: string) => Promise<void>;
 }
@@ -40,6 +47,7 @@ export default function Workspace({
   apiConfigs,
   activeThread,
   threads,
+  promptPresets,
   themeId,
   imageSaveDirectory,
   persistenceMessage,
@@ -50,10 +58,14 @@ export default function Workspace({
   onAppendThreadRecord,
   onReplaceThreadRecord,
   onDeleteThreadRecord,
+  onUpdateThreadComposer,
+  onSavePromptPreset,
+  onDeletePromptPreset,
   onThemeChange,
   onUpdateImageSaveDirectory,
 }: WorkspaceProps) {
   const [isApiDialogOpen, setIsApiDialogOpen] = useState(false);
+  const [isPromptLibraryOpen, setIsPromptLibraryOpen] = useState(false);
   const [editingApi, setEditingApi] = useState<ApiConfig | undefined>(activeApi);
   const [previewRecord, setPreviewRecord] = useState<GenerationRecord | null>(null);
   const [selectedId, setSelectedId] = useState<string | undefined>(activeThread.records[0]?.id);
@@ -132,12 +144,9 @@ export default function Workspace({
     <div className="app-shell">
       <header className="topbar">
         <div className="brand">
-          <span className="brand-icon">
-            <ImagePlus size={18} />
-          </span>
           <div>
-            <strong>本地生图工作台</strong>
-            <span>Windows local image generator</span>
+            <strong>Rocky的图片工作室</strong>
+            <span>第三方 API 图片创作工作台</span>
           </div>
         </div>
 
@@ -201,9 +210,10 @@ export default function Workspace({
           />
           <PromptComposer
             activeApi={activeApi}
-            apiConfigs={apiConfigs}
+            composer={activeThread.composer}
             isGenerating={isActiveThreadGenerating}
-            onSelectApi={onSelectApi}
+            onComposerChange={(composer) => void onUpdateThreadComposer(activeThread.id, composer)}
+            onOpenPromptLibrary={() => setIsPromptLibraryOpen(true)}
             onOpenApiSettings={() => {
               setEditingApi(activeApi);
               setIsApiDialogOpen(true);
@@ -235,6 +245,22 @@ export default function Workspace({
         onNewApi={() => setEditingApi(undefined)}
         onSelectApi={onSelectApi}
         onUpdateImageSaveDirectory={onUpdateImageSaveDirectory}
+      />
+
+      <PromptLibraryDialog
+        composer={activeThread.composer}
+        selectedRecord={selectedRecord}
+        presets={promptPresets}
+        isOpen={isPromptLibraryOpen}
+        onClose={() => setIsPromptLibraryOpen(false)}
+        onApplyPreset={(preset) =>
+          void onUpdateThreadComposer(activeThread.id, {
+            ...activeThread.composer,
+            prompt: preset.prompt,
+          })
+        }
+        onDeletePreset={onDeletePromptPreset}
+        onSavePreset={onSavePromptPreset}
       />
 
       <ImagePreviewDialog record={previewRecord} onClose={() => setPreviewRecord(null)} />

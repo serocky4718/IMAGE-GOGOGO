@@ -1,6 +1,6 @@
 import type { AspectRatio, QualityPreset, ResolutionPreset, ThemeId } from '../types/app';
 
-export const aspectRatios: AspectRatio[] = ['1:1', '4:3', '3:4', '16:9', '9:16'];
+export const aspectRatios: AspectRatio[] = ['1:1', '4:3', '3:4', '16:9', '9:16', '3:2', '2:3', '2:1'];
 export const resolutions: ResolutionPreset[] = ['1K', '2K', '4K'];
 export const qualities: QualityPreset[] = ['low', 'medium', 'high'];
 

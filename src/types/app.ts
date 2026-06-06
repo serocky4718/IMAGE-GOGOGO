@@ -1,7 +1,7 @@
 export type CapabilityState = 'supported' | 'unsupported' | 'unknown';
 
 export type GenerationMode = 'text-to-image' | 'image-to-image';
-export type AspectRatio = '1:1' | '4:3' | '3:4' | '16:9' | '9:16';
+export type AspectRatio = '1:1' | '4:3' | '3:4' | '16:9' | '9:16' | '3:2' | '2:3' | '2:1';
 export type ResolutionPreset = '1K' | '2K' | '4K';
 export type QualityPreset = 'low' | 'medium' | 'high';
 export type GenerationStatus = 'queued' | 'running' | 'succeeded' | 'failed' | 'cancelled';
@@ -59,11 +59,29 @@ export interface GenerationRecord {
   errorMessage?: string;
 }
 
+export interface ThreadComposerState {
+  prompt: string;
+  referenceImage?: SelectedImage;
+  aspectRatio: AspectRatio;
+  resolution: ResolutionPreset;
+  quality: QualityPreset;
+}
+
 export interface GenerationThread {
   id: string;
   title: string;
   createdAt: string;
   records: GenerationRecord[];
+  composer: ThreadComposerState;
+}
+
+export interface PromptPreset {
+  id: string;
+  title: string;
+  prompt: string;
+  thumbnailDataUrl?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface AppSettings {
@@ -77,6 +95,7 @@ export interface PersistedState {
   apiConfigs: ApiConfig[];
   records?: GenerationRecord[];
   threads: GenerationThread[];
+  promptPresets: PromptPreset[];
   settings: AppSettings;
 }
 

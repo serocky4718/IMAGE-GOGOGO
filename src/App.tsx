@@ -1,8 +1,16 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Workspace from './components/Workspace';
-import { emptyState, loadPersistedState, savePersistedState } from './lib/state';
+import { createDefaultComposerState, emptyState, loadPersistedState, savePersistedState } from './lib/state';
 import { supportedApiProtocol } from './lib/api';
-import type { ApiConfig, GenerationRecord, GenerationThread, PersistedState, ThemeId } from './types/app';
+import type {
+  ApiConfig,
+  GenerationRecord,
+  GenerationThread,
+  PersistedState,
+  PromptPreset,
+  ThemeId,
+  ThreadComposerState,
+} from './types/app';
 
 export default function App() {
   const [state, setState] = useState<PersistedState>(emptyState);
@@ -18,7 +26,7 @@ export default function App() {
         setState(normalizedState);
         setPersistenceMessage(warningMessage);
       })
-      .catch(() => setPersistenceMessage('读取本地状态失败，已使用默认工作台继续。'))
+      .catch(() => setPersistenceMessage('读取本地状态失败，已使用默认工作室继续。'))
       .finally(() => setIsReady(true));
   }, []);
 
@@ -89,6 +97,7 @@ export default function App() {
       title: `生成窗口 ${nextIndex}`,
       createdAt: new Date().toISOString(),
       records: [],
+      composer: createDefaultComposerState(),
     };
 
     await commit({
@@ -117,6 +126,39 @@ export default function App() {
       threads: current.threads.map((thread) =>
         thread.id === threadId ? { ...thread, records: [record, ...thread.records] } : thread,
       ),
+    }));
+  }
+
+  async function updateThreadComposer(threadId: string, composer: ThreadComposerState) {
+    await commitUpdate((current) => ({
+      ...current,
+      threads: current.threads.map((thread) => (thread.id === threadId ? { ...thread, composer } : thread)),
+    }));
+  }
+
+  async function savePromptPreset(title: string, composer: ThreadComposerState, thumbnailSrc?: string) {
+    const trimmedPrompt = composer.prompt.trim();
+    const trimmedTitle = title.trim();
+    if (!trimmedPrompt || !trimmedTitle) return;
+
+    const now = new Date().toISOString();
+    await commitUpdate((current) => ({
+      ...current,
+      promptPresets: upsertPromptPreset(current.promptPresets, {
+        id: crypto.randomUUID(),
+        title: trimmedTitle,
+        prompt: trimmedPrompt,
+        thumbnailDataUrl: thumbnailSrc ?? composer.referenceImage?.dataUrl,
+        createdAt: now,
+        updatedAt: now,
+      }),
+    }));
+  }
+
+  async function deletePromptPreset(presetId: string) {
+    await commitUpdate((current) => ({
+      ...current,
+      promptPresets: current.promptPresets.filter((preset) => preset.id !== presetId),
     }));
   }
 
@@ -173,7 +215,7 @@ export default function App() {
       <div className="boot-screen">
         <div className="boot-panel">
           <span className="boot-mark" />
-          <p>正在打开本地生图工作台</p>
+          <p>正在打开 Rocky的图片工作室</p>
         </div>
       </div>
     );
@@ -185,6 +227,7 @@ export default function App() {
       apiConfigs={state.apiConfigs}
       activeThread={activeThread}
       threads={state.threads}
+      promptPresets={state.promptPresets}
       themeId={state.settings.activeTheme}
       imageSaveDirectory={state.settings.imageSaveDirectory}
       onSaveApi={upsertApiConfig}
@@ -194,6 +237,9 @@ export default function App() {
       onAppendThreadRecord={appendThreadRecord}
       onReplaceThreadRecord={replaceThreadRecord}
       onDeleteThreadRecord={deleteThreadRecord}
+      onUpdateThreadComposer={updateThreadComposer}
+      onSavePromptPreset={savePromptPreset}
+      onDeletePromptPreset={deletePromptPreset}
       onThemeChange={updateTheme}
       onUpdateImageSaveDirectory={updateImageSaveDirectory}
       persistenceMessage={persistenceMessage}
@@ -208,8 +254,15 @@ function normalizeState(nextState: PersistedState): PersistedState {
     title: '生成窗口 1',
     createdAt: new Date().toISOString(),
     records: migratedRecords,
+    composer: createDefaultComposerState(),
   };
-  const threads = nextState.threads?.length ? nextState.threads : [fallbackThread];
+  const threads = (nextState.threads?.length ? nextState.threads : [fallbackThread]).map((thread) => ({
+    id: thread.id,
+    title: thread.title,
+    createdAt: thread.createdAt,
+    records: thread.records ?? [],
+    composer: normalizeComposer(thread.composer),
+  }));
   const activeThreadId =
     nextState.settings?.activeThreadId && threads.some((thread) => thread.id === nextState.settings.activeThreadId)
       ? nextState.settings.activeThreadId
@@ -221,6 +274,7 @@ function normalizeState(nextState: PersistedState): PersistedState {
       protocol: config.protocol ?? supportedApiProtocol,
     })),
     threads,
+    promptPresets: Array.isArray(nextState.promptPresets) ? nextState.promptPresets : [],
     settings: {
       activeTheme: nextState.settings?.activeTheme ?? 'cream-pink',
       activeApiConfigId: nextState.settings?.activeApiConfigId,
@@ -228,4 +282,35 @@ function normalizeState(nextState: PersistedState): PersistedState {
       imageSaveDirectory: nextState.settings?.imageSaveDirectory,
     },
   };
+}
+
+function normalizeComposer(composer?: Partial<ThreadComposerState>): ThreadComposerState {
+  const defaults = createDefaultComposerState();
+  return {
+    prompt: composer?.prompt ?? defaults.prompt,
+    referenceImage: composer?.referenceImage,
+    aspectRatio: composer?.aspectRatio ?? defaults.aspectRatio,
+    resolution: composer?.resolution ?? defaults.resolution,
+    quality: composer?.quality ?? defaults.quality,
+  };
+}
+
+function upsertPromptPreset(presets: PromptPreset[], preset: PromptPreset): PromptPreset[] {
+  const existingIndex = presets.findIndex(
+    (item) => item.title.trim() === preset.title.trim() && item.prompt.trim() === preset.prompt.trim(),
+  );
+
+  if (existingIndex === -1) {
+    return [preset, ...presets];
+  }
+
+  return presets.map((item, index) =>
+    index === existingIndex
+      ? {
+          ...item,
+          thumbnailDataUrl: preset.thumbnailDataUrl ?? item.thumbnailDataUrl,
+          updatedAt: preset.updatedAt,
+        }
+      : item,
+  );
 }

@@ -3,6 +3,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { isValidHttpUrl, supportedApiProtocol } from '../src/lib/api';
 import { fetchWithTimeout, requestOpenAiCompatibleImage } from '../src/lib/image-generation';
+import { createDefaultComposerState } from '../src/lib/state';
 import type {
   ApiConfig,
   GenerateImageResult,
@@ -47,7 +48,7 @@ async function readStateFile(filePath: string): Promise<StateLoadResult> {
 
     return {
       state: createEmptyState(),
-      warningMessage: `本地状态文件读取失败，已回退到默认工作台，并备份损坏文件到 ${backupPath}。`,
+      warningMessage: `本地状态文件读取失败，已回退到默认工作室，并备份损坏文件到 ${backupPath}。`,
     };
   }
 }
@@ -64,7 +65,7 @@ function createWindow() {
     height: 920,
     minWidth: 1120,
     minHeight: 720,
-    title: '本地生图工作台',
+    title: 'Rocky的图片工作室',
     backgroundColor: '#fff7fa',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
@@ -92,12 +93,14 @@ function createEmptyState(): PersistedState {
         title: '生成窗口 1',
         createdAt: new Date().toISOString(),
         records: [],
+        composer: createDefaultComposerState(),
       },
     ],
+    promptPresets: [],
     settings: {
       ...defaultSettings,
       activeThreadId: threadId,
-      imageSaveDirectory: path.join(app.getPath('pictures'), '本地生图工作台'),
+      imageSaveDirectory: path.join(app.getPath('pictures'), 'Rocky的图片工作室'),
     },
   };
 }
@@ -110,6 +113,9 @@ function normalizeSize(params: GenerationParams): string {
       '3:4': '768x1024',
       '16:9': '1280x720',
       '9:16': '720x1280',
+      '3:2': '1152x768',
+      '2:3': '768x1152',
+      '2:1': '1536x768',
     },
     '2K': {
       '1:1': '2048x2048',
@@ -117,6 +123,9 @@ function normalizeSize(params: GenerationParams): string {
       '3:4': '1536x2048',
       '16:9': '2560x1440',
       '9:16': '1440x2560',
+      '3:2': '2304x1536',
+      '2:3': '1536x2304',
+      '2:1': '3072x1536',
     },
     '4K': {
       '1:1': '4096x4096',
@@ -124,6 +133,9 @@ function normalizeSize(params: GenerationParams): string {
       '3:4': '3072x4096',
       '16:9': '3840x2160',
       '9:16': '2160x3840',
+      '3:2': '4608x3072',
+      '2:3': '3072x4608',
+      '2:1': '6144x3072',
     },
   };
 
@@ -159,7 +171,7 @@ function extensionFromContentType(contentType: string | null): string {
 }
 
 async function saveGeneratedImage(result: GenerateImageResult, params: GenerationParams): Promise<string | undefined> {
-  const saveDirectory = params.imageSaveDirectory || path.join(app.getPath('pictures'), '本地生图工作台');
+  const saveDirectory = params.imageSaveDirectory || path.join(app.getPath('pictures'), 'Rocky的图片工作室');
   await fs.mkdir(saveDirectory, { recursive: true });
 
   let bytes: Buffer;
@@ -269,7 +281,10 @@ function validateGenerationParams(params: unknown): asserts params is Generation
     params.aspectRatio !== '4:3' &&
     params.aspectRatio !== '3:4' &&
     params.aspectRatio !== '16:9' &&
-    params.aspectRatio !== '9:16'
+    params.aspectRatio !== '9:16' &&
+    params.aspectRatio !== '3:2' &&
+    params.aspectRatio !== '2:3' &&
+    params.aspectRatio !== '2:1'
   ) {
     throw new Error('尺寸比例无效。');
   }

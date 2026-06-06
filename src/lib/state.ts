@@ -1,4 +1,29 @@
-import { defaultSettings, type PersistedState, type StateLoadResult } from '../types/app';
+import {
+  defaultSettings,
+  type GenerationThread,
+  type PersistedState,
+  type StateLoadResult,
+  type ThreadComposerState,
+} from '../types/app';
+
+export function createDefaultComposerState(): ThreadComposerState {
+  return {
+    prompt: '',
+    aspectRatio: '16:9',
+    resolution: '1K',
+    quality: 'medium',
+  };
+}
+
+export function createThread(threadIndex: number): GenerationThread {
+  return {
+    id: crypto.randomUUID(),
+    title: `生成窗口 ${threadIndex}`,
+    createdAt: new Date().toISOString(),
+    records: [],
+    composer: createDefaultComposerState(),
+  };
+}
 
 export const emptyState: PersistedState = {
   apiConfigs: [],
@@ -8,8 +33,10 @@ export const emptyState: PersistedState = {
       title: '生成窗口 1',
       createdAt: new Date().toISOString(),
       records: [],
+      composer: createDefaultComposerState(),
     },
   ],
+  promptPresets: [],
   settings: defaultSettings,
 };
 
